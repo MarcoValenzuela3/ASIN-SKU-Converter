@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>ASIN / SKU Converter</title>
   <style>
     body {
@@ -8,6 +9,13 @@
       max-width: 500px;
       margin: 40px auto;
       text-align: center;
+    }
+    h2 {
+      margin-bottom: 5px;
+    }
+    p {
+      margin-top: 0;
+      color: #555;
     }
     input {
       width: 80%;
@@ -27,13 +35,14 @@
       border: 1px solid #ddd;
       padding: 15px;
       border-radius: 8px;
+      min-height: 40px;
     }
   </style>
 </head>
 <body>
 
   <h2>ASIN ↔ SKU Converter</h2>
-  <p>Enter an ASIN or SKU to look up the corresponding product.</p>
+  <p>Enter an ASIN or SKU to look up the product.</p>
 
   <input id="queryInput" type="text" placeholder="Enter ASIN or SKU">
   <br>
@@ -49,26 +58,31 @@
         return;
       }
 
-      const url =
-        "https://script.google.com/a/macros/efilliateinc.com/s/AKfycbxrNmBZM71QLceT2yyw-B3u75TILCbxcTV8qe5Zw7jlTXGGWsVuU-2BvDGb9Ymy-RdB/exec?q=" +
-        encodeURIComponent(query);
+      // Your Google Script Web App URL
+      const baseUrl = "https://script.google.com/macros/s/AKfycbxUjiWD0t27DHE1V-BXlON5yNnaZunFM4C0BO3OaAhB4-E68fbJK1tHhgxpHTGXxqAs/exec";
 
-      const response = await fetch(url);
-      const data = await response.json();
+      document.getElementById("result").innerHTML = "Searching...";
 
-      if (data.error) {
+      try {
+        const response = await fetch(baseUrl + "?q=" + encodeURIComponent(query));
+        const data = await response.json();
+
+        if (data.error) {
+          document.getElementById("result").innerHTML =
+            "<strong>No match found.</strong>";
+        } else {
+          document.getElementById("result").innerHTML = `
+            <strong>Product:</strong> ${data.product || "(no name)"} <br><br>
+            <strong>ASIN:</strong> ${data.asin} <br>
+            <strong>SKU:</strong> ${data.sku}
+          `;
+        }
+      } catch (err) {
         document.getElementById("result").innerHTML =
-          "<strong>No match found.</strong>";
-      } else {
-        document.getElementById("result").innerHTML = `
-          <strong>Product:</strong> ${data.product} <br><br>
-          <strong>ASIN:</strong> ${data.asin} <br>
-          <strong>SKU:</strong> ${data.sku}
-        `;
+          "<strong>Error calling Google Script:</strong> " + err;
       }
     }
   </script>
 
 </body>
 </html>
-
