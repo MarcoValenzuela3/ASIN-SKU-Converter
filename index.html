@@ -92,6 +92,22 @@
       font-size: 16px;
       color: #444;
     }
+
+    .amazon-button {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 14px;
+      background: #4a90e2;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .amazon-button:hover {
+      background: #3c7ac3;
+    }
   </style>
 </head>
 
@@ -133,10 +149,16 @@
           document.getElementById("result").innerHTML =
             "<div class='result-line'><strong>No match found.</strong></div>";
         } else {
+          const amazonUrl = `https://www.amazon.com/dp/${data.asin}`;
+
           document.getElementById("result").innerHTML = `
             <div class='result-line'><strong>Product:</strong> ${data.product || "(no name)"}</div>
             <div class='result-line'><strong>ASIN:</strong> ${data.asin}</div>
             <div class='result-line'><strong>SKU:</strong> ${data.sku}</div>
+
+            <a href="${amazonUrl}" target="_blank" class="amazon-button">
+              Open on Amazon
+            </a>
           `;
         }
       } catch (err) {
