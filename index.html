@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Product Search + ASIN/SKU Converter</title>
+
   <style>
     body {
       margin: 0;
@@ -18,7 +19,7 @@
     .card {
       background: white;
       width: 95%;
-      max-width: 700px;
+      max-width: 900px;
       margin-top: 40px;
       border-radius: 12px;
       padding: 30px;
@@ -76,6 +77,7 @@
       display: none;
     }
 
+    /* ⭐ TABLE FIX (SKU FITS WITHOUT SCROLLING) */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -87,14 +89,21 @@
       padding: 12px;
       text-align: left;
       border-bottom: 1px solid #eee;
+      font-size: 15px;
+      vertical-align: top;
     }
 
     th {
       background: #f4f6f8;
-      font-size: 15px;
       font-weight: bold;
       color: #333;
     }
+
+    /* Column widths */
+    th:nth-child(1), td:nth-child(1) { width: 40%; }
+    th:nth-child(2), td:nth-child(2) { width: 18%; }
+    th:nth-child(3), td:nth-child(3) { width: 27%; } /* SKU gets more space */
+    th:nth-child(4), td:nth-child(4) { width: 15%; white-space: nowrap; }
 
     .amazon-button {
       display: inline-block;
@@ -105,6 +114,7 @@
       border-radius: 6px;
       text-decoration: none;
       transition: 0.2s;
+      white-space: nowrap;
     }
 
     .amazon-button:hover {
@@ -119,7 +129,6 @@
     <p class="subtext">Search by ASIN, SKU, or Keyword</p>
 
     <input id="queryInput" type="text" placeholder="Enter ASIN, SKU, or keyword..." />
-
     <button onclick="lookup()">Search</button>
 
     <div id="resultBox">
@@ -129,6 +138,13 @@
   </div>
 
   <script>
+    // ⭐ Allow ENTER key to trigger search
+    document.getElementById("queryInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        lookup();
+      }
+    });
+
     async function lookup() {
       const query = document.getElementById("queryInput").value.trim();
       if (!query) {
@@ -146,7 +162,6 @@
       try {
         const response = await fetch(baseUrl + "?q=" + encodeURIComponent(query));
         const data = await response.json();
-
         const results = data.results;
 
         if (!results || results.length === 0) {
@@ -154,7 +169,6 @@
           return;
         }
 
-        // Display count
         if (results.length === 1 && data.type === "single") {
           document.getElementById("resultCount").innerText = "1 product found:";
         } else {
@@ -162,7 +176,6 @@
             results.length + " products found:";
         }
 
-        // Build the table
         let html = `
           <tr>
             <th>Product Name</th>
@@ -194,4 +207,3 @@
   </script>
 </body>
 </html>
-
