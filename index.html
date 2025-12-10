@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ASIN ↔ SKU Converter</title>
+  <title>Product Search + ASIN/SKU Converter</title>
+
   <style>
     body {
       margin: 0;
@@ -18,7 +19,7 @@
     .card {
       background: white;
       width: 95%;
-      max-width: 480px;
+      max-width: 1000px;
       margin-top: 40px;
       border-radius: 12px;
       padding: 30px;
@@ -73,36 +74,55 @@
 
     #resultBox {
       margin-top: 25px;
-      padding: 20px;
-      background: #f9fafb;
-      border: 1px solid #eef0f2;
-      border-radius: 10px;
       display: none;
     }
 
-    .result-title {
-      font-size: 18px;
-      font-weight: bold;
-      color: #222;
-      margin-bottom: 10px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
     }
 
-    .result-line {
-      margin: 6px 0;
-      font-size: 16px;
-      color: #444;
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f4f6f8;
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* Column widths */
+    th:nth-child(1), td:nth-child(1) { width: 15%; } /* Image */
+    th:nth-child(2), td:nth-child(2) { width: 40%; } /* Product Name */
+    th:nth-child(3), td:nth-child(3) { width: 15%; white-space: nowrap; }
+    th:nth-child(4), td:nth-child(4) { width: 20%; }
+    th:nth-child(5), td:nth-child(5) { width: 10%; white-space: nowrap; }
+
+    .product-image {
+      height: 120px; /* ⭐ Medium size */
+      width: auto;
+      border-radius: 6px;
+      object-fit: contain;
+      background: #fff;
     }
 
     .amazon-button {
       display: inline-block;
-      margin-top: 15px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       background: #4a90e2;
       color: white;
-      font-size: 16px;
-      border-radius: 8px;
+      font-size: 14px;
+      border-radius: 6px;
       text-decoration: none;
       transition: 0.2s;
+      white-space: nowrap;
     }
 
     .amazon-button:hover {
@@ -113,60 +133,86 @@
 
 <body>
   <div class="card">
-    <h1>ASIN ↔ SKU Converter</h1>
-    <p class="subtext">Quickly find product details using an ASIN or SKU</p>
+    <h1>Product Search + ASIN/SKU Converter</h1>
+    <p class="subtext">Search by ASIN, SKU, or Keyword</p>
 
-    <input id="queryInput" type="text" placeholder="Enter ASIN or SKU" />
-
+    <input id="queryInput" type="text" placeholder="Enter ASIN, SKU, or keyword..." />
     <button onclick="lookup()">Search</button>
 
     <div id="resultBox">
-      <div class="result-title">Product Details</div>
-      <div id="result"></div>
+      <h3 id="resultCount"></h3>
+      <table id="resultTable"></table>
     </div>
   </div>
 
   <script>
+    document.getElementById("queryInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") lookup();
+    });
+
     async function lookup() {
       const query = document.getElementById("queryInput").value.trim();
-
       if (!query) {
-        alert("Please enter an ASIN or SKU");
+        alert("Please enter something to search.");
         return;
       }
 
       const baseUrl =
-        "https://script.google.com/macros/s/AKfycbxUjiWD0t27DHE1V-BXlON5yNnaZunFM4C0BO3OaAhB4-E68fbJK1tHhgxpHTGXxqAs/exec";
+        "https://script.google.com/macros/s/AKfycbwdhEe8xMtOnullDBu-EkgFHSsaswmVu6YKL6NY-gy9PGXrrbOxj8AwEZ0W5OdiZXza/exec";
 
       document.getElementById("resultBox").style.display = "block";
-      document.getElementById("result").innerHTML = "Searching...";
+      document.getElementById("resultCount").innerText = "Searching...";
+      document.getElementById("resultTable").innerHTML = "";
 
       try {
         const response = await fetch(baseUrl + "?q=" + encodeURIComponent(query));
         const data = await response.json();
+        const results = data.results;
 
-        if (data.error) {
-          document.getElementById("result").innerHTML =
-            "<div class='result-line'><strong>No match found.</strong></div>";
-        } else {
-          const amazonUrl = `https://www.amazon.com/dp/${data.asin}`;
-
-          document.getElementById("result").innerHTML = `
-            <div class='result-line'><strong>Product:</strong> ${data.product || "(no name)"}</div>
-            <div class='result-line'><strong>ASIN:</strong> ${data.asin}</div>
-            <div class='result-line'><strong>SKU:</strong> ${data.sku}</div>
-
-            <a href="${amazonUrl}" target="_blank" class="amazon-button">
-              Open on Amazon
-            </a>
-          `;
+        if (!results || results.length === 0) {
+          document.getElementById("resultCount").innerText = "No results found.";
+          return;
         }
+
+        if (results.length === 1 && data.type === "single") {
+          document.getElementById("resultCount").innerText = "1 product found:";
+        } else {
+          document.getElementById("resultCount").innerText =
+            results.length + " products found:";
+        }
+
+        let html = `
+          <tr>
+            <th>Image</th>
+            <th>Product Name</th>
+            <th>ASIN</th>
+            <th>SKU</th>
+            <th>Amazon</th>
+          </tr>
+        `;
+
+        results.forEach(item => {
+          const asin = item.asin;
+          const amazonUrl = `https://www.amazon.com/dp/${asin}`;
+          const imageUrl = item.imageURL || ""; // ⭐ FROM COLUMN D
+
+          html += `
+            <tr>
+              <td><img src="${imageUrl}" class="product-image"></td>
+              <td>${item.product}</td>
+              <td>${item.asin}</td>
+              <td>${item.sku}</td>
+              <td><a href="${amazonUrl}" target="_blank" class="amazon-button">Open</a></td>
+            </tr>
+          `;
+        });
+
+        document.getElementById("resultTable").innerHTML = html;
+
       } catch (err) {
-        document.getElementById("result").innerHTML =
-          "<div class='result-line'><strong>Error:</strong> " + err + "</div>";
+        document.getElementById("resultCount").innerText = "Error: " + err;
       }
     }
   </script>
 </body>
 </html>
-
