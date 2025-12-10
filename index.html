@@ -77,7 +77,6 @@
       display: none;
     }
 
-    /* ⭐ TABLE WITH IMAGE COLUMN */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -90,7 +89,7 @@
       text-align: left;
       border-bottom: 1px solid #eee;
       font-size: 15px;
-      vertical-align: top;
+      vertical-align: middle;
     }
 
     th {
@@ -102,9 +101,9 @@
     /* Column widths */
     th:nth-child(1), td:nth-child(1) { width: 15%; } /* Image */
     th:nth-child(2), td:nth-child(2) { width: 40%; } /* Product Name */
-    th:nth-child(3), td:nth-child(3) { width: 15%; white-space: nowrap; } /* ASIN */
-    th:nth-child(4), td:nth-child(4) { width: 20%; } /* SKU */
-    th:nth-child(5), td:nth-child(5) { width: 10%; white-space: nowrap; } /* Amazon */
+    th:nth-child(3), td:nth-child(3) { width: 15%; white-space: nowrap; }
+    th:nth-child(4), td:nth-child(4) { width: 20%; }
+    th:nth-child(5), td:nth-child(5) { width: 10%; white-space: nowrap; }
 
     .product-image {
       height: 120px; /* ⭐ Medium size */
@@ -147,11 +146,8 @@
   </div>
 
   <script>
-    // ⭐ Enable ENTER key to start search
     document.getElementById("queryInput").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
-        lookup();
-      }
+      if (e.key === "Enter") lookup();
     });
 
     async function lookup() {
@@ -198,13 +194,13 @@
         results.forEach(item => {
           const asin = item.asin;
           const amazonUrl = `https://www.amazon.com/dp/${asin}`;
-          const imageUrl = `https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=${asin}&Format=_SL200_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822`;
+          const imageUrl = item.imageURL || ""; // ⭐ FROM COLUMN D
 
           html += `
             <tr>
-              <td><img src="${imageUrl}" class="product-image" /></td>
+              <td><img src="${imageUrl}" class="product-image"></td>
               <td>${item.product}</td>
-              <td>${asin}</td>
+              <td>${item.asin}</td>
               <td>${item.sku}</td>
               <td><a href="${amazonUrl}" target="_blank" class="amazon-button">Open</a></td>
             </tr>
