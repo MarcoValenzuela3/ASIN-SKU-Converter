@@ -106,7 +106,7 @@
     th:nth-child(5), td:nth-child(5) { width: 10%; white-space: nowrap; }
 
     .product-image {
-      height: 120px; /* ⭐ Medium size */
+      height: 120px;
       width: auto;
       border-radius: 6px;
       object-fit: contain;
@@ -146,6 +146,7 @@
   </div>
 
   <script>
+    // Allow pressing ENTER to search
     document.getElementById("queryInput").addEventListener("keypress", function(e) {
       if (e.key === "Enter") lookup();
     });
@@ -177,6 +178,7 @@
         if (results.length === 1 && data.type === "single") {
           document.getElementById("resultCount").innerText = "1 product found:";
         } else {
+          document.getElementCount
           document.getElementById("resultCount").innerText =
             results.length + " products found:";
         }
@@ -194,13 +196,13 @@
         results.forEach(item => {
           const asin = item.asin;
           const amazonUrl = `https://www.amazon.com/dp/${asin}`;
-          const imageUrl = item.imageURL || ""; // ⭐ FROM COLUMN D
+          const imageUrl = item.imageURL; // ⭐ THIS IS NOW YOUR DRIVE URL
 
           html += `
             <tr>
               <td><img src="${imageUrl}" class="product-image"></td>
               <td>${item.product}</td>
-              <td>${item.asin}</td>
+              <td>${asin}</td>
               <td>${item.sku}</td>
               <td><a href="${amazonUrl}" target="_blank" class="amazon-button">Open</a></td>
             </tr>
