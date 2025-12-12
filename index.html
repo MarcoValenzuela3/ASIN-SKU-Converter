@@ -98,9 +98,8 @@
       color: #333;
     }
 
-    /* Column widths */
     th:nth-child(1), td:nth-child(1) { width: 15%; } /* Image */
-    th:nth-child(2), td:nth-child(2) { width: 40%; } /* Product Name */
+    th:nth-child(2), td:nth-child(2) { width: 40%; }
     th:nth-child(3), td:nth-child(3) { width: 15%; white-space: nowrap; }
     th:nth-child(4), td:nth-child(4) { width: 20%; }
     th:nth-child(5), td:nth-child(5) { width: 10%; white-space: nowrap; }
@@ -158,6 +157,7 @@
         return;
       }
 
+      // ⭐ Your Apps Script deployment URL
       const baseUrl =
         "https://script.google.com/macros/s/AKfycbwdhEe8xMtOnullDBu-EkgFHSsaswmVu6YKL6NY-gy9PGXrrbOxj8AwEZ0W5OdiZXza/exec";
 
@@ -175,14 +175,14 @@
           return;
         }
 
-        if (results.length === 1 && data.type === "single") {
+        if (results.length === 1) {
           document.getElementById("resultCount").innerText = "1 product found:";
         } else {
-          document.getElementCount
           document.getElementById("resultCount").innerText =
             results.length + " products found:";
         }
 
+        // Build table HTML
         let html = `
           <tr>
             <th>Image</th>
@@ -196,11 +196,13 @@
         results.forEach(item => {
           const asin = item.asin;
           const amazonUrl = `https://www.amazon.com/dp/${asin}`;
-          const imageUrl = item.imageURL; // ⭐ THIS IS NOW YOUR DRIVE URL
+          const imageUrl = item.imageURL || "";
 
           html += `
             <tr>
-              <td><img src="${imageUrl}" class="product-image"></td>
+              <td>
+                <img src="${imageUrl}" class="product-image" onerror="this.src='';">
+              </td>
               <td>${item.product}</td>
               <td>${asin}</td>
               <td>${item.sku}</td>
