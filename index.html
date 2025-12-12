@@ -98,11 +98,11 @@
       color: #333;
     }
 
-    th:nth-child(1), td:nth-child(1) { width: 15%; } /* Image */
+    th:nth-child(1), td:nth-child(1) { width: 15%; }
     th:nth-child(2), td:nth-child(2) { width: 40%; }
-    th:nth-child(3), td:nth-child(3) { width: 15%; white-space: nowrap; }
+    th:nth-child(3), td:nth-child(3) { width: 15%; }
     th:nth-child(4), td:nth-child(4) { width: 20%; }
-    th:nth-child(5), td:nth-child(5) { width: 10%; white-space: nowrap; }
+    th:nth-child(5), td:nth-child(5) { width: 10%; }
 
     .product-image {
       height: 120px;
@@ -145,7 +145,7 @@
   </div>
 
   <script>
-    // Allow pressing ENTER to search
+    // Enable pressing ENTER to search
     document.getElementById("queryInput").addEventListener("keypress", function(e) {
       if (e.key === "Enter") lookup();
     });
@@ -157,9 +157,8 @@
         return;
       }
 
-      // ⭐ Your Apps Script deployment URL
-      const baseUrl =
-        "https://script.google.com/macros/s/AKfycbwdhEe8xMtOnullDBu-EkgFHSsaswmVu6YKL6NY-gy9PGXrrbOxj8AwEZ0W5OdiZXza/exec";
+      // ⭐ YOUR ACTUAL DEPLOYMENT URL — already inserted
+      const baseUrl = "https://script.google.com/macros/s/AKfycbwdhEe8xMtOnullDBu-EkgFHSsaswmVu6YKL6NY-gy9PGXrrbOxj8AwEZ0W5OdiZXza/exec";
 
       document.getElementById("resultBox").style.display = "block";
       document.getElementById("resultCount").innerText = "Searching...";
@@ -175,14 +174,9 @@
           return;
         }
 
-        if (results.length === 1) {
-          document.getElementById("resultCount").innerText = "1 product found:";
-        } else {
-          document.getElementById("resultCount").innerText =
-            results.length + " products found:";
-        }
+        document.getElementById("resultCount").innerText =
+          results.length === 1 ? "1 product found:" : results.length + " products found:";
 
-        // Build table HTML
         let html = `
           <tr>
             <th>Image</th>
@@ -200,9 +194,7 @@
 
           html += `
             <tr>
-              <td>
-                <img src="${imageUrl}" class="product-image" onerror="this.src='';">
-              </td>
+              <td><img src="${imageUrl}" class="product-image" onerror="this.src=''"></td>
               <td>${item.product}</td>
               <td>${asin}</td>
               <td>${item.sku}</td>
