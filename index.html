@@ -1,115 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>ASIN / SKU Converter</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 1000px;
-      margin: 40px auto;
-    }
-
-    textarea {
-      width: 100%;
-      height: 100px;
-      font-size: 16px;
-      padding: 10px;
-    }
-
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 25px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-    }
-
-    th {
-      background: #f4f4f4;
-    }
-
-    .copy-btn {
-      font-size: 12px;
-      margin-left: 6px;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>ASIN ↔ SKU Converter</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background: #f4f4f4;
+  }
+  button {
+    margin-right: 5px;
+    cursor: pointer;
+  }
+</style>
 </head>
+
 <body>
 
-<h2>ASIN / SKU Converter</h2>
+<h2>ASIN ↔ SKU Converter</h2>
 
-<p>
-Enter one or more ASINs, SKUs, or keywords.<br>
-You can separate them with commas or new lines.
-</p>
+<input
+  id="search"
+  placeholder="Enter ASIN, SKU, or keyword (multiple allowed)"
+  autofocus
+>
 
-<textarea id="query" placeholder="B08XXXXXXX
-SKU-123
-keyword"></textarea>
-
-<br>
-<button onclick="search()">Search</button>
-
-<table id="results"></table>
+<table>
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>ASIN</th>
+      <th>SKU</th>
+      <th>Amazon</th>
+      <th>Copy</th>
+    </tr>
+  </thead>
+  <tbody id="results"></tbody>
+</table>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUjiWD0t27DHE1V-BXlON5yNnaZunFM4C0BO3OaAhB4-E68fbJK1tHhgxpHTGXxqAs/exec";
+const API_URL =
+"https://script.google.com/macros/s/AKfycbwdhEe8xMtOnullDBu-EkgFHSsaswmVu6YKL6NY-gy9PGXrrbOxj8AwEZ0W5OdiZXza/exec";
+
+const input = document.getElementById("search");
+const tbody = document.getElementById("results");
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") runSearch();
+});
+
+function runSearch() {
+  const q = input.value.trim();
+  if (!q) return;
+
+  fetch(API_URL + "?q=" + encodeURIComponent(q))
+    .then(res => res.json())
+    .then(showResults)
+    .catch(err => {
+      console.error(err);
+      alert("Search failed. Check console.");
+    });
+}
 
 function copyText(text) {
   navigator.clipboard.writeText(text);
+  alert("Copied: " + text);
 }
 
-function search() {
-  const q = document.getElementById("query").value;
+function showResults(data) {
+  tbody.innerHTML = "";
 
-  fetch(`${SCRIPT_URL}?q=${encodeURIComponent(q)}`)
-    .then(res => res.json())
-    .then(data => {
-      let html = `
-        <tr>
-          <th>Product</th>
-          <th>ASIN</th>
-          <th>SKU</th>
-        </tr>
-      `;
+  if (!data.length) {
+    tbody.innerHTML =
+      "<tr><td colspan='5'>No results found</td></tr>";
+    return;
+  }
 
-      if (!data.results.length) {
-        html += `
-          <tr>
-            <td colspan="3">No results found</td>
-          </tr>
-        `;
-      } else {
-        data.results.forEach(r => {
-          html += `
-            <tr>
-              <td>${r.product || ""}</td>
-              <td>
-                ${r.asin || ""}
-                <button class="copy-btn" onclick="copyText('${r.asin}')">Copy</button>
-              </td>
-              <td>
-                ${r.sku || ""}
-                <button class="copy-btn" onclick="copyText('${r.sku}')">Copy</button>
-              </td>
-            </tr>
-          `;
-        });
-      }
+  data.forEach(item => {
+    const tr = document.createElement("tr");
 
-      document.getElementById("results").innerHTML = html;
-    });
+    tr.innerHTML = `
+      <td>${item.product}</td>
+      <td>${item.asin}</td>
+      <td>${item.sku}</td>
+      <td>
+        <a href="${item.amazon}" target="_blank">
+          View on Amazon
+        </a>
+      </td>
+      <td>
+        <button onclick="copyText('${item.asin}')">Copy ASIN</button>
+        <button onclick="copyText('${item.sku}')">Copy SKU</button>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
 }
 </script>
 
