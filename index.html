@@ -1,218 +1,117 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Product Search + ASIN/SKU Converter</title>
-
+  <title>ASIN / SKU Converter</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
       font-family: Arial, sans-serif;
-      background: #f2f4f7;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
-
-    .card {
-      background: white;
-      width: 95%;
       max-width: 1000px;
-      margin-top: 40px;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+      margin: 40px auto;
     }
 
-    h1 {
-      text-align: center;
-      margin: 0 0 10px 0;
-      font-size: 26px;
-      color: #222;
-    }
-
-    p.subtext {
-      text-align: center;
-      margin: 0 0 25px 0;
-      color: #666;
-      font-size: 15px;
-    }
-
-    input {
+    textarea {
       width: 100%;
-      padding: 12px;
-      font-size: 17px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    input:focus {
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+      height: 100px;
+      font-size: 16px;
+      padding: 10px;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      background: #4a90e2;
-      color: white;
-      font-size: 18px;
-      border: none;
-      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 16px;
+      margin-top: 10px;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      background: #3c7ac3;
-    }
-
-    #resultBox {
-      margin-top: 25px;
-      display: none;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
-      background: white;
+      margin-top: 25px;
     }
 
     th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-      font-size: 15px;
-      vertical-align: middle;
+      border: 1px solid #ddd;
+      padding: 10px;
     }
 
     th {
-      background: #f4f6f8;
-      font-weight: bold;
-      color: #333;
+      background: #f4f4f4;
     }
 
-    /* Column widths */
-    th:nth-child(1), td:nth-child(1) { width: 15%; } /* Image */
-    th:nth-child(2), td:nth-child(2) { width: 40%; } /* Product Name */
-    th:nth-child(3), td:nth-child(3) { width: 15%; white-space: nowrap; }
-    th:nth-child(4), td:nth-child(4) { width: 20%; }
-    th:nth-child(5), td:nth-child(5) { width: 10%; white-space: nowrap; }
-
-    .product-image {
-      height: 120px; /* ⭐ Medium size */
-      width: auto;
-      border-radius: 6px;
-      object-fit: contain;
-      background: #fff;
-    }
-
-    .amazon-button {
-      display: inline-block;
-      padding: 8px 12px;
-      background: #4a90e2;
-      color: white;
-      font-size: 14px;
-      border-radius: 6px;
-      text-decoration: none;
-      transition: 0.2s;
-      white-space: nowrap;
-    }
-
-    .amazon-button:hover {
-      background: #3c7ac3;
+    .copy-btn {
+      font-size: 12px;
+      margin-left: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
-
 <body>
-  <div class="card">
-    <h1>Product Search + ASIN/SKU Converter</h1>
-    <p class="subtext">Search by ASIN, SKU, or Keyword</p>
 
-    <input id="queryInput" type="text" placeholder="Enter ASIN, SKU, or keyword..." />
-    <button onclick="lookup()">Search</button>
+<h2>ASIN / SKU Converter</h2>
 
-    <div id="resultBox">
-      <h3 id="resultCount"></h3>
-      <table id="resultTable"></table>
-    </div>
-  </div>
+<p>
+Enter one or more ASINs, SKUs, or keywords.<br>
+You can separate them with commas or new lines.
+</p>
 
-  <script>
-    document.getElementById("queryInput").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") lookup();
-    });
+<textarea id="query" placeholder="B08XXXXXXX
+SKU-123
+keyword"></textarea>
 
-    async function lookup() {
-      const query = document.getElementById("queryInput").value.trim();
-      if (!query) {
-        alert("Please enter something to search.");
-        return;
-      }
+<br>
+<button onclick="search()">Search</button>
 
-      const baseUrl =
-        "https://script.google.com/macros/s/AKfycbwdhEe8xMtOnullDBu-EkgFHSsaswmVu6YKL6NY-gy9PGXrrbOxj8AwEZ0W5OdiZXza/exec";
+<table id="results"></table>
 
-      document.getElementById("resultBox").style.display = "block";
-      document.getElementById("resultCount").innerText = "Searching...";
-      document.getElementById("resultTable").innerHTML = "";
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUjiWD0t27DHE1V-BXlON5yNnaZunFM4C0BO3OaAhB4-E68fbJK1tHhgxpHTGXxqAs/exec";
 
-      try {
-        const response = await fetch(baseUrl + "?q=" + encodeURIComponent(query));
-        const data = await response.json();
-        const results = data.results;
+function copyText(text) {
+  navigator.clipboard.writeText(text);
+}
 
-        if (!results || results.length === 0) {
-          document.getElementById("resultCount").innerText = "No results found.";
-          return;
-        }
+function search() {
+  const q = document.getElementById("query").value;
 
-        if (results.length === 1 && data.type === "single") {
-          document.getElementById("resultCount").innerText = "1 product found:";
-        } else {
-          document.getElementById("resultCount").innerText =
-            results.length + " products found:";
-        }
+  fetch(`${SCRIPT_URL}?q=${encodeURIComponent(q)}`)
+    .then(res => res.json())
+    .then(data => {
+      let html = `
+        <tr>
+          <th>Product</th>
+          <th>ASIN</th>
+          <th>SKU</th>
+        </tr>
+      `;
 
-        let html = `
+      if (!data.results.length) {
+        html += `
           <tr>
-            <th>Image</th>
-            <th>Product Name</th>
-            <th>ASIN</th>
-            <th>SKU</th>
-            <th>Amazon</th>
+            <td colspan="3">No results found</td>
           </tr>
         `;
-
-        results.forEach(item => {
-          const asin = item.asin;
-          const amazonUrl = `https://www.amazon.com/dp/${asin}`;
-          const imageUrl = item.imageURL || ""; // ⭐ FROM COLUMN D
-
+      } else {
+        data.results.forEach(r => {
           html += `
             <tr>
-              <td><img src="${imageUrl}" class="product-image"></td>
-              <td>${item.product}</td>
-              <td>${item.asin}</td>
-              <td>${item.sku}</td>
-              <td><a href="${amazonUrl}" target="_blank" class="amazon-button">Open</a></td>
+              <td>${r.product || ""}</td>
+              <td>
+                ${r.asin || ""}
+                <button class="copy-btn" onclick="copyText('${r.asin}')">Copy</button>
+              </td>
+              <td>
+                ${r.sku || ""}
+                <button class="copy-btn" onclick="copyText('${r.sku}')">Copy</button>
+              </td>
             </tr>
           `;
         });
-
-        document.getElementById("resultTable").innerHTML = html;
-
-      } catch (err) {
-        document.getElementById("resultCount").innerText = "Error: " + err;
       }
-    }
-  </script>
+
+      document.getElementById("results").innerHTML = html;
+    });
+}
+</script>
+
 </body>
 </html>
