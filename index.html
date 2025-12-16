@@ -47,6 +47,12 @@
     background: #f4f4f4;
   }
 
+  .clickable {
+    color: blue;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
   button.copy {
     margin-right: 5px;
     cursor: pointer;
@@ -115,6 +121,11 @@ function copyText(text) {
   alert("Copied: " + text);
 }
 
+function selectValue(value) {
+  input.value = value;
+  input.focus();
+}
+
 function showResults(data) {
   tbody.innerHTML = "";
 
@@ -129,16 +140,28 @@ function showResults(data) {
 
     tr.innerHTML = `
       <td>${item.product}</td>
-      <td>${item.asin}</td>
-      <td>${item.sku}</td>
+      <td>
+        <span class="clickable" onclick="selectValue('${item.asin}')">
+          ${item.asin}
+        </span>
+      </td>
+      <td>
+        <span class="clickable" onclick="selectValue('${item.sku}')">
+          ${item.sku}
+        </span>
+      </td>
       <td>
         <a href="${item.amazon}" target="_blank">
           View on Amazon
         </a>
       </td>
       <td>
-        <button class="copy" onclick="copyText('${item.asin}')">Copy ASIN</button>
-        <button class="copy" onclick="copyText('${item.sku}')">Copy SKU</button>
+        <button class="copy" onclick="copyText('${item.asin}')">
+          Copy ASIN
+        </button>
+        <button class="copy" onclick="copyText('${item.sku}')">
+          Copy SKU
+        </button>
       </td>
     `;
 
